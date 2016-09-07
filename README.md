@@ -28,7 +28,7 @@ https://console.cloud.google.com/apis/credentials
 * Fork and clone this repository 
 * Copy env-COPYME.sh to env.sh, and enter your Google OIDC credentials here. This 
 sample demonstrates how to keep secrets such as credentials from being checked in to git. The file env.sh 
-is in the .gitignore file
+is in .gitignore
 * Ensure minikube is running. 
 * Build the base *forgerock/openig* image from the ForgeRock Docker repo at https://stash.forgerock.org/projects/DOCKER/repos/docker/ 
 * For example, for minikube, assuming you have cloned the above repo:
@@ -40,7 +40,9 @@ docker build -t forgerock/openig  openig
 * It is recommended that you create an ingress controller for minikube. See create-ingress.sh. 
 (In the future minikube is expected to make this easier - this step may not be required)
 * Run 
-```./deploy.sh
+
+```
+./deploy.sh
 ```
 
 The above shell script will deploy the sample application to the *default* namespace in kubernetes.
@@ -74,12 +76,12 @@ This stage will setup Jenkins to automatically build a new docker image and push
  shell environment inherited by jenkins is configured to use your minikube cluster. 
 * Create a username and password secret credential in Jenkins called *oidc-secret*. The
  username contains your google client id, and the password holds the client secret.
- The Jenkins pipeline uses this to create the env.sh file. See the Jenkinsfile for details.
+ The Jenkins pipeline uses this to create *env.sh*. See the Jenkinsfile for details.
 * The build is configured to use the git branch name as the namespace to deploy to. For example,
 if you are on a git branch called "my-test-feature", it will get deployed to a k8s namespace
 called "my-test-feature". 
-* The build also used the branch name to qualify the ingress. An ingress 
-hostname of the form  openig.BRANCH_NAME>test.com is created. 
+* The build also uses the branch name to qualify the ingress. An ingress 
+hostname of the form  openig.BRANCH_NAME.test.com is created. 
 Assuming you are using the "master" branch, add the following to /etc/hosts
 
 
@@ -87,8 +89,8 @@ Assuming you are using the "master" branch, add the following to /etc/hosts
 192.168.34.5  openig.default.test.com openig.master.test.com
 ```
 
-Using namespaces and ingress hostname allows you to deploy many
-seperate instances of OpenIG to the same Kubernetes cluster, and
+Using namespaces and ingress hostnames enables you to deploy
+separate instances of OpenIG to the same Kubernetes cluster, and
 to keep those instances isolated. 
 
 # Development flow
@@ -98,7 +100,8 @@ to keep those instances isolated.
 * When you want to automate the deployment using Jenkins, create a feature branch
 * The OpenIG configuration is in openig/config and is used to create an immutable OpenIG Docker image
 * When the branch is pushed, Jenkins will pick it up and start to run the pipeline defined in ./Jenkinsfile (note:
-Jenkins currently has a bug (https://issues.jenkins-ci.org/browse/JENKINS-35310 ) where build triggers can not be saved).
+Jenkins currently has a bug (https://issues.jenkins-ci.org/browse/JENKINS-35310 ) where build triggers can not be saved). 
+You must manually trigger the build in the Jenkins UI.
 * deploy.sh invokes *docker build* to create a new child image which is configured according to openig/config
 * The image is optionally pushed to a registry. 
 * kubectl commands are issued to push the new image to Kubernetes. If an old image already exists, it will be replaced by
@@ -223,10 +226,10 @@ deletion use rmi -f )
 
 OpenIG:
 
-* Expand example to include the sample app described in docs 
+* Expand example to include the sample app described in the OpenIG gateway guide 
 * Parameterize OpenIG config further
 
-k8s todo:
+k8s:
 
 * Get jenkins running in k8s - so the example can self bootstrap
 * Test on GKE
