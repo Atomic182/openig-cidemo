@@ -17,6 +17,7 @@ spec:
         volumeMounts:
           - name: perftest-results
             mountPath: /opt/gatling/results
+      # Note that a hostPath volume will only work on a single node cluster- like minikube
       volumes:
       - name: perftest-results
         hostPath:

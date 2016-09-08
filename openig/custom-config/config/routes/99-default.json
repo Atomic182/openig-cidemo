@@ -3,7 +3,7 @@
     "type": "StaticResponseHandler",
     "config" : {
       "status": 200,
-      "entity": "Msg: ${welcomeMsg} Hostname: ${env['HOSTNAME']} Namespace: ${env['NAMESPACE']} Image: ${env['IMAGE']}"
+      "entity": "${read(env['OPENIG_BASE'].concat('/html/welcome.html'))}"
     }
   }
 }

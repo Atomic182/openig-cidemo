@@ -60,6 +60,5 @@
       }
     }
   },
-  "condition": "${matches(request.uri.path, '^/openid')}",
-  "baseURI": "https://openig.test.com"
+  "condition": "${matches(request.uri.path, '^/openid')}"
 }

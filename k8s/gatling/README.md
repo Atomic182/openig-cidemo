@@ -29,9 +29,8 @@ This will open up a web page with the gatling results.
 For this example we assume OpenIG is running in the default namespace.
 You may need to modify this example for your specific use case.
 
-If you are running on a cloud k8s environment, hostPath will not work - you
+If you are running on a cloud k8s environment, hostPath volumes will not work - you
 need to use a persistent volume claim.  
-
 
 
 

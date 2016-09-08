@@ -52,7 +52,7 @@
         </sift>
     </appender>
      
-    <root level="INFO">
+    <root level="DEBUG">
         <!--  Sift not used for container deployment
         <appender-ref ref="SIFT"/>
         -->

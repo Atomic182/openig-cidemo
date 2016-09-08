@@ -3,7 +3,7 @@
     "type": "StaticResponseHandler",
     "config" : {
       "status": 200,
-      "entity": "${read(env['OPENIG_BASE'].concat('/html/hello.html'))}"
+      "entity": "Msg: ${welcomeMsg} Hostname: ${env['HOSTNAME']} Namespace: ${env['NAMESPACE']} Image: ${env['IMAGE']}"
     }
   },
   "condition": "${matches(request.uri.path, '^/hello')}"
