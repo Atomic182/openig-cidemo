@@ -13,13 +13,13 @@ source env.sh
 # Environment variables that are expected to get set by Jenkins - but will default if not set
 
 BRANCH_NAME=${BRANCH_NAME:-default}
-# We default build number to the timestamp in seconds
+# We default build number to the timestamp in seconds and use this in the docker image tag
 # If you use the same build number each time, k8s will think the image is the same and will not roll out a new one
 # When a deployment is used.
 BUILD_NUMBER=${BUILD_NUMBER:-`date +%s`}
 
 
-# If command line args are supplied - they are the branch name
+# If command line args are supplied - $1 is the branch name
 if [ "$#" -eq 1 ]; then
    BRANCH_NAME=$1
 fi
@@ -29,6 +29,7 @@ NAMESPACE=${BRANCH_NAME}
 
 # Env vars use to parameterize deployment
 APP_NAME=openig
+# Name of the app image to build
 IMAGE="${APP_NAME}-custom:${BRANCH_NAME}.${BUILD_NUMBER}"
 
 TMPDIR="/tmp/openig"
@@ -50,11 +51,9 @@ $GC docker build -t $IMAGE openig
 # will build direct to docker in k8s
 #$GC docker push $IMAGE
 
-
+# shortcut
 kc="kubectl --namespace=${NAMESPACE}"
 
-echo "Creating namespace ${NAMESPACE} if it does not exist"
-kubectl get ns ${NAMESPACE} || kubectl create ns ${NAMESPACE}
 
 # Generate a keystore for OpenIG
 function create_keystore_secret {
@@ -66,6 +65,7 @@ function create_keystore_secret {
 }
 
 # Create all the generic type secrets here...
+# Right now this is the client id / secret for the social login example
 function create_secrets {
   $kc create secret generic ig-secrets \
       --from-literal=client-id=${CLIENT_ID} \
@@ -78,24 +78,45 @@ function do_template {
    do
       echo "templating $file"
       sed -e "s#IMAGE_TEMPLATE#${IMAGE}#" -e "s#NAMESPACE_TEMPLATE#${NAMESPACE}#" $file  > $TMPDIR/out.yaml
-      $kc apply -f $TMPDIR/out.yaml
+      kubectl --namespace="${NAMESPACE}" apply -f $TMPDIR/out.yaml
    done
 }
 
-# if openig keystore secret does not exist, create it
-$kc get secret openig || create_keystore_secret
+# Canary does not deploy to a new namespace..
+if [ "${NAMESPACE}"  != "canary" ];
+then
 
-# if generic secrets do not exist, create it
-$kc get secret  ig-secrets || create_secrets
+   echo "Creating namespace ${NAMESPACE} if it does not exist"
+   kubectl get ns ${NAMESPACE} || kubectl create ns ${NAMESPACE}
+
+   # if openig keystore secret does not exist, create it
+   $kc get secret openig || create_keystore_secret
+
+   # if generic secrets do not exist, create it
+   $kc get secret  ig-secrets || create_secrets
 
 
-echo "Creating/updating services"
-$kc apply -f k8s/services
+   echo "Creating/updating services"
+   $kc apply -f k8s/services
+fi
 
 
-# todo: handle prod and canary deployments
 echo "Creating/updating deployments"
-do_template k8s/dev/*.yaml
+
+case $NAMESPACE in
+production)
+   do_template k8s/production/*.yaml
+   ;;
+canary)
+   echo "Doing a canary deployment"
+   # reset namespace - because canary goes to production
+   NAMESPACE="production"
+   do_template k8s/canary/*.yaml
+   ;;
+*)
+   do_template k8s/dev/*yaml
+   ;;
+esac
 
 
 # clean up

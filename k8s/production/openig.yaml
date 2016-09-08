@@ -1,25 +1,24 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: openig
+  name: openig-production
 spec:
   replicas: 3
-  revisionHistoryLimit: 3
   template:
     metadata:
       name: openig
       labels:
-         name: openig
+       name: openig
+       release: production
     spec:
       containers:
       - name: openig
-        # This template gets replaced with the real image name by the deploy script
         image: IMAGE_TEMPLATE
         # Assume image is in our docker cache. Part of the CI build process
         imagePullPolicy: IfNotPresent
         ports:
-          - name: openig
-            containerPort: 8080
+        - name: openig
+          containerPort: 8080
         volumeMounts:
           - name: keystore
             mountPath: /var/secrets/openig
@@ -35,6 +34,12 @@ spec:
               secretKeyRef:
                 name: ig-secrets
                 key: client-secret
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: IMAGE
+            value: IMAGE_TEMPLATE
       volumes:
         - name: keystore
           secret:
