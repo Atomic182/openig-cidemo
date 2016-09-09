@@ -109,15 +109,43 @@ the new image using a rolling deployment. Deployments allow for rolling upgrades
 
 # Production and Canary
 
-[Note: Work in progress - this is not fully implemented yet]
-
 * The "production" namespace is treated as special. It will cause a load balancer ingress to be created so
 that the image becomes reachable from outside the cluster. It will also deploy
-multiple copies of the OpenIG container.
+multiple copies of the OpenIG container by specifying a replica count in the deployment
 * The canary branch is used to test a canary build. The concept
 is to use a k8s deployment, and roll out a single instance to production. This instance
 will receive a fraction of the traffic, and can be used to ensure the new build is stable
 and can be promoted to production.
+
+The canary deployment works by creating a new deployment (openig-canary) that 
+gets deployed alongside the production deployment (openig). The production 
+deployment will have several replicas (let's say 5), while the canary will
+have a single replica. You can play with this blend by adjusting the replica count for each deployment. 
+
+Both deployments are selected by the service definition and/or the ingress
+through the use of labels.  For example, if the ingress selects for
+"openig" - it will find pods for both the canary and the production instances. 
+You can change this behavior through a selector expression. This can be
+ used to selectively turn canary behavior on or off. 
+ 
+You can try the /hello page  [http://openig.production.test.com/hello ]
+to view the instance you are connecting to. This page will print
+the instance name as part of the host name - so you should see it change from production to
+canary if you get load balanced to a different backend. 
+
+Note that ingress controllers generally try to use sticky load balancing to a
+backend -so you wont see this in a browser.  Try using curl instead,
+and running it many times until you get the canary instance:
+
+```
+curl http://openig.production.test.com/hello 
+curl http://openig.production.test.com/hello 
+
+
+```
+
+
+ 
 
 
 # Ingress Alternatives
