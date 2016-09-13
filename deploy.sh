@@ -67,6 +67,7 @@ function create_keystore_secret {
 # Create all the generic type secrets here...
 # Right now this is the client id / secret for the social login example
 function create_secrets {
+  $kc delete secret ig-secrets
   $kc create secret generic ig-secrets \
       --from-literal=client-id=${CLIENT_ID} \
       --from-literal=client-secret=${CLIENT_SECRET}
@@ -93,7 +94,7 @@ then
    $kc get secret openig || create_keystore_secret
 
    # if generic secrets do not exist, create it
-   $kc get secret  ig-secrets || create_secrets
+   create_secrets
 
 
    echo "Creating/updating services"
