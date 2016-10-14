@@ -44,7 +44,7 @@ GC=""
 
 echo "Building Docker image $IMAGE"
 
-$GC docker build -t $IMAGE openig
+$GC docker pull cheddar.internal.forgerock.com:5000/openig
 
 # To push to registry uncomment this
 # If you are doing local development, you probably dont need to push since you
